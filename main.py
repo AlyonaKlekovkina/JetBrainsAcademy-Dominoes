@@ -116,36 +116,56 @@ def players_move(players_set, stock, snake):
             print("Invalid input. Please try again.")
 
 
+def evaluated_dicitonary(counting_dictionary, set):
+    for i in range(len(set)):
+        if set[i][0] in counting_dictionary:
+            counting_dictionary[set[i][0]] += 1
+        if set[i][1] in counting_dictionary:
+            counting_dictionary[set[i][1]] += 1
+    return counting_dictionary
+
+
+def best_to_put_pieces(set, dictionary):
+    new_list = []
+    for i in range(len(set)):
+        res = dictionary[set[i][0]] + dictionary[set[i][1]]
+        if res > 5:
+            new_list.insert(0, set[i])
+        elif res < 5:
+            new_list.append(set[i])
+    return new_list
+
+
 def computers_move(computers_set, snake):
     if len(stock) == 0:
         return "Status: The game is over. It's a draw!"
     move = input()
     while True:
         if len(move) == 0:
-            index = random.randrange(0, (len(computers_set)))
-            piece = computers_set[index]
-            if piece[0] == snake[-1][-1]:
-                snake.append(piece)
-                computers_set.pop(index)
-                return snake, computers_set
-            elif piece[1] == snake[-1][-1]:
-                reversed_piece = [piece[1], piece[0]]
-                snake.append(reversed_piece)
-                computers_set.pop(index)
-                return snake, computers_set
-            elif piece[1] == snake[0][0]:
-                snake.insert(0, piece)
-                computers_set.pop(index)
-                return snake, computers_set
-            elif piece[0] == snake[0][0]:
-                reversed_piece = [piece[1], piece[0]]
-                snake.insert(0, reversed_piece)
-                computers_set.pop(index)
-                return snake, computers_set
-            else:
-                computers_set.append(stock[0])
-                stock.pop(0)
-                return snake, computers_set
+            for i in range(len(computers_set)):
+                index = i
+                piece = computers_set[index]
+                if piece[0] == snake[-1][-1]:
+                    snake.append(piece)
+                    computers_set.pop(index)
+                    return snake, computers_set
+                elif piece[1] == snake[-1][-1]:
+                    reversed_piece = [piece[1], piece[0]]
+                    snake.append(reversed_piece)
+                    computers_set.pop(index)
+                    return snake, computers_set
+                elif piece[1] == snake[0][0]:
+                    snake.insert(0, piece)
+                    computers_set.pop(index)
+                    return snake, computers_set
+                elif piece[0] == snake[0][0]:
+                    reversed_piece = [piece[1], piece[0]]
+                    snake.insert(0, reversed_piece)
+                    computers_set.pop(index)
+                    return snake, computers_set
+            computers_set.append(stock[0])
+            stock.pop(0)
+            return snake, computers_set
 
 
 starting_tool = create_starting_set()
@@ -158,6 +178,9 @@ snake = []
 first_move = determine_first_move(players_set, players_doubles, computers_set, computers_doubles, snake)
 starting_player = first_move[0]
 starting_index = first_move[2]
+counting_dictionary = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
+calculated_dictionary = evaluated_dicitonary(counting_dictionary, snake)
+sorted_list = best_to_put_pieces(computers_set, calculated_dictionary)
 
 if starting_player == 'computer':
     count = 1
@@ -165,27 +188,26 @@ elif starting_player == 'player':
     count = 0
 while len(players_set) != 0 or len(computers_set) != 0:
     if count % 2 == 0:
-        if len(computers_set) == 0:
-            print_result(stock, computers_set, players_set, snake)
+        print_result(stock, sorted_list, players_set, snake)
+        print("Status: Computer is about to make a move. Press Enter to continue...")
+        computers_move(sorted_list, snake)
+        count += 1
+        if len(sorted_list) == 0:
+            print_result(stock, sorted_list, players_set, snake)
             print("Status: The game is over. The computer won!")
             break
         if len(stock) == 0:
             print("Status: The game is over. It's a draw!")
             break
-        print_result(stock, computers_set, players_set, snake)
-        print("Status: Computer is about to make a move. Press Enter to continue...")
-        computers_move(computers_set, snake)
-        count += 1
     if count % 2 != 0:
+        print_result(stock, sorted_list, players_set, snake)
+        print("Status: It's your turn to make a move. Enter your command.")
+        players_move(players_set, stock, snake)
+        count += 1
         if len(players_set) == 0:
-            print_result(stock, computers_set, players_set, snake)
+            print_result(stock, sorted_list, players_set, snake)
             print("Status: The game is over. You won!")
             break
         if len(stock) == 0:
             print("Status: The game is over. It's a draw!")
             break
-        print_result(stock, computers_set, players_set, snake)
-        print("Status: It's your turn to make a move. Enter your command.")
-        players_move(players_set, stock, snake)
-        count += 1
-
