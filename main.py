@@ -68,30 +68,84 @@ def determine_first_move(players_set, players_doubles, computers_set, computers_
         return 'computer', snake, the_index
 
 
-def make_move(the_set, stock, snake, move):
-    if len(move) == 0:
-        snake.append(the_set[0])
-        the_set.pop(0)
-    else:
+def players_move(players_set, stock, snake):
+    if len(stock) == 0:
+        return "Status: The game is over. It's a draw!"
+    while True:
+        move = input()
         try:
             int(move)
+            if int(move) == 0:
+                players_set.append(stock[0])
+                stock.pop(0)
+                return stock
+            index = int(move)
+            piece = players_set[abs(index) - 1]
+            if int(move) < 0 and piece[1] == snake[0][0]:
+                snake.insert(0, piece)
+                players_set.pop(abs(index) - 1)
+                return players_set, snake
+            if int(move) < 0 and piece[0] == snake[0][0]:
+                reversed_piece = [piece[1], piece[0]]
+                snake.insert(0, reversed_piece)
+                players_set.pop(abs(index) - 1)
+                return snake, players_set
+            if piece[0] == snake[-1][-1]:
+                snake.append(piece)
+                players_set.pop(index - 1)
+                return snake, players_set
+            elif piece[1] == snake[-1][-1]:
+                reversed_piece = [piece[1], piece[0]]
+                snake.append(reversed_piece)
+                players_set.pop(index - 1)
+                return snake, players_set
+            elif piece[1] == snake[0][0]:
+                snake.insert(0, piece)
+                players_set.pop(index - 1)
+                return snake, players_set
+            elif piece[0] == snake[0][0]:
+                reversed_piece = [piece[1], piece[0]]
+                snake.insert(0, reversed_piece)
+                players_set.pop(index - 1)
+                return snake, players_set
+            elif piece[1] != snake[0][0] or piece[0] != snake[-1][-1]:
+                print("Illegal move. Please try again.")
         except ValueError:
             print("Invalid input. Please try again.")
-            move = input()
-        if abs(int(move)) > len(the_set):
-            move = input()
+        except IndexError:
+            print("Invalid input. Please try again.")
+
+
+def computers_move(computers_set, snake):
+    if len(stock) == 0:
+        return "Status: The game is over. It's a draw!"
+    move = input()
+    while True:
         if len(move) == 0:
-            snake.append(the_set[0])
-            the_set.pop(0)
-        if int(move) == 0:
-            the_set.append(stock[0])
-            stock.pop(0)
-            return the_set
-        if int(move) > 0:
-            snake.append(the_set[int(move) - 1])
-        elif int(move) < 0:
-            snake.insert(0, the_set[abs(int(move)) - 1])
-        the_set.pop(abs(int(move)) - 1)
+            index = random.randrange(0, (len(computers_set)))
+            piece = computers_set[index]
+            if piece[0] == snake[-1][-1]:
+                snake.append(piece)
+                computers_set.pop(index)
+                return snake, computers_set
+            elif piece[1] == snake[-1][-1]:
+                reversed_piece = [piece[1], piece[0]]
+                snake.append(reversed_piece)
+                computers_set.pop(index)
+                return snake, computers_set
+            elif piece[1] == snake[0][0]:
+                snake.insert(0, piece)
+                computers_set.pop(index)
+                return snake, computers_set
+            elif piece[0] == snake[0][0]:
+                reversed_piece = [piece[1], piece[0]]
+                snake.insert(0, reversed_piece)
+                computers_set.pop(index)
+                return snake, computers_set
+            else:
+                computers_set.append(stock[0])
+                stock.pop(0)
+                return snake, computers_set
 
 
 starting_tool = create_starting_set()
@@ -111,22 +165,27 @@ elif starting_player == 'player':
     count = 0
 while len(players_set) != 0 or len(computers_set) != 0:
     if count % 2 == 0:
-        print_result(stock, computers_set, players_set, snake)
-        print("Status: Computer is about to make a move. Press Enter to continue...")
-        move = input()
-        make_move(computers_set, stock, snake, move)
-        count += 1
         if len(computers_set) == 0:
             print_result(stock, computers_set, players_set, snake)
             print("Status: The game is over. The computer won!")
             break
-    if count % 2 != 0:
+        if len(stock) == 0:
+            print("Status: The game is over. It's a draw!")
+            break
         print_result(stock, computers_set, players_set, snake)
-        print("Status: It's your turn to make a move. Enter your command.")
-        move = input()
-        make_move(players_set, stock, snake, move)
+        print("Status: Computer is about to make a move. Press Enter to continue...")
+        computers_move(computers_set, snake)
         count += 1
+    if count % 2 != 0:
         if len(players_set) == 0:
             print_result(stock, computers_set, players_set, snake)
             print("Status: The game is over. You won!")
             break
+        if len(stock) == 0:
+            print("Status: The game is over. It's a draw!")
+            break
+        print_result(stock, computers_set, players_set, snake)
+        print("Status: It's your turn to make a move. Enter your command.")
+        players_move(players_set, stock, snake)
+        count += 1
+
